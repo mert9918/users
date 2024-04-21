@@ -1,0 +1,163 @@
+<!-- views/secondPage.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Second Page</title>
+    <link rel="stylesheet" href="/css/style.css"> <!-- Link to your CSS file -->
+</head>
+
+<body>
+    <div class="container">
+        <div class="box">
+            <select id='selectedOption' name="selectedOption"> ً
+                <option value="5">خماسي</option>
+                <option value="4">رباعي</option>
+                <option value="3">ثلاثي</option>
+            </select>
+            <div class="scroll-view">
+
+            </div>
+            <button style="background-color: green;" id="start">البدء</button>
+            <button style="background-color: red;" id="stop">توقف</button>
+        </div>
+    </div>
+</body>
+<style>
+    body {
+        background-color: #2e2231;
+    }
+
+    .container {
+        margin: 0;
+        padding: 0;
+        background-color: #2e2231;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .box {
+        width: 90%;
+        /* Adjust the width as needed */
+        max-width: 400px;
+        margin: 20px auto;
+        /* Center the box horizontally */
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        display: flex;
+        /* Use flexbox */
+        flex-direction: column;
+        /* Align items vertically */
+    }
+
+    .box select {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .scroll-view {
+        max-height: 200px;
+        /* Adjust the maximum height as needed */
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 10px;
+    }
+
+    .scroll-view p {
+        margin: 0;
+    }
+
+    button {
+        width: 100%;
+        padding: 10px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+
+    #stop {
+        display: none;
+    }
+
+    #stop.unhidden {
+        display: block;
+    }
+
+    #start.hidden {
+        display: none;
+    }
+</style>
+
+<script>
+    console.log("test")
+    document.getElementById('start').addEventListener('click', function (event) {
+        event.preventDefault();
+        let button = document.getElementById('start');
+        let stopBtn = document.getElementById('stop')
+        button.disabled = true;
+        button.classList.add('hidden');
+        stopBtn.classList.add('unhidden');
+        var dropdown = document.getElementById('selectedOption');
+        var selectedOption = dropdown.options[dropdown.selectedIndex];
+        var selectedValue = selectedOption.value;
+
+        var intid = setInterval(() => {
+            fetch(`http://localhost:3000/api/getuser/${selectedValue}`, {
+                method: 'GET',
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                return response.json();
+            })
+                .then(data => {
+                    console.log(data)
+                    const scrollView = document.querySelector('.scroll-view');
+                    function scrollToBottom() {
+                        scrollView.scrollTop = scrollView.scrollHeight;
+                    }
+                    const paragraph = document.createElement('p');
+                    if (data.err) {
+                        paragraph.textContent = 'انتهى اشتراكك';
+                        paragraph.style.color = 'black';
+                        scrollView.appendChild(paragraph);
+                        scrollToBottom();
+                        clearInterval(intid)
+
+                    }else{
+                        paragraph.textContent = data.username;
+                        paragraph.style.color = data.a === true ? 'red' : 'green';
+                        scrollView.appendChild(paragraph);
+                        scrollToBottom();
+                    }
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                });
+        }, 10000)
+    });
+    document.getElementById('stop').addEventListener('click', function (event) {
+        location.reload();
+    })
+</script>
+
+</html>
